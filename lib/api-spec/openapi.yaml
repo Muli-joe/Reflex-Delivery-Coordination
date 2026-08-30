@@ -3,13 +3,19 @@ info:
   # Do not change the title, if the title changes, the import paths will be broken
   title: Api
   version: 0.1.0
-  description: API specification
+  description: Reflex delivery coordination API for Kenyan retailers
 servers:
   - url: /api
     description: Base API path
 tags:
   - name: health
     description: Health operations
+  - name: deliveries
+    description: Delivery request and dispatch operations
+  - name: riders
+    description: Rider delivery operations
+  - name: dashboard
+    description: Dashboard summary operations
 paths:
   /healthz:
     get:
@@ -24,7 +30,254 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/HealthStatus"
+  /v1/dashboard/summary:
+    get:
+      operationId: getDashboardSummary
+      tags: [dashboard]
+      summary: Get dashboard summary
+      responses:
+        "200":
+          description: Dashboard counts and operational metrics
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/DashboardSummary"
+  /v1/activity:
+    get:
+      operationId: listActivity
+      tags: [dashboard]
+      summary: List recent delivery activity
+      parameters:
+        - $ref: "#/components/parameters/Limit"
+      responses:
+        "200":
+          description: Recent status activity
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/ActivityItem"
+  /v1/delivery-requests:
+    get:
+      operationId: listDeliveryRequests
+      tags: [deliveries]
+      summary: List delivery requests
+      parameters:
+        - $ref: "#/components/parameters/Status"
+        - $ref: "#/components/parameters/Search"
+        - $ref: "#/components/parameters/Limit"
+      responses:
+        "200":
+          description: Delivery requests
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/DeliveryRequest"
+    post:
+      operationId: createDeliveryRequest
+      tags: [deliveries]
+      summary: Create a delivery request
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/DeliveryRequestInput"
+      responses:
+        "201":
+          description: Created delivery request
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/DeliveryRequest"
+  /v1/delivery-requests/{id}:
+    get:
+      operationId: getDeliveryRequest
+      tags: [deliveries]
+      summary: Get a delivery request
+      parameters:
+        - $ref: "#/components/parameters/DeliveryId"
+      responses:
+        "200":
+          description: Delivery request details
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/DeliveryRequestDetail"
+        "404":
+          $ref: "#/components/responses/NotFound"
+  /v1/delivery-requests/{id}/assign:
+    post:
+      operationId: assignDeliveryRequest
+      tags: [deliveries]
+      summary: Assign or reassign a rider
+      parameters:
+        - $ref: "#/components/parameters/DeliveryId"
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/AssignmentInput"
+      responses:
+        "200":
+          description: Updated delivery request
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/DeliveryRequest"
+        "409":
+          $ref: "#/components/responses/Conflict"
+  /v1/delivery-requests/{id}/cancel:
+    post:
+      operationId: cancelDeliveryRequest
+      tags: [deliveries]
+      summary: Cancel a delivery request
+      parameters:
+        - $ref: "#/components/parameters/DeliveryId"
+      responses:
+        "200":
+          description: Cancelled delivery request
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/DeliveryRequest"
+  /v1/delivery-requests/{id}/status:
+    post:
+      operationId: updateDeliveryStatus
+      tags: [deliveries]
+      summary: Update a delivery status
+      parameters:
+        - $ref: "#/components/parameters/DeliveryId"
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/StatusUpdateInput"
+      responses:
+        "200":
+          description: Updated delivery request
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/DeliveryRequest"
+        "409":
+          $ref: "#/components/responses/Conflict"
+  /v1/delivery-requests/{id}/pod:
+    post:
+      operationId: submitProofOfDelivery
+      tags: [deliveries]
+      summary: Submit proof of delivery
+      parameters:
+        - $ref: "#/components/parameters/DeliveryId"
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/ProofOfDeliveryInput"
+      responses:
+        "200":
+          description: Delivered request with proof
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/DeliveryRequest"
+        "422":
+          description: QR token mismatch or invalid proof
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+  /v1/riders:
+    get:
+      operationId: listRiders
+      tags: [riders]
+      summary: List riders
+      responses:
+        "200":
+          description: Riders available for assignment
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/Rider"
+  /v1/riders/me/deliveries:
+    get:
+      operationId: listMyDeliveries
+      tags: [riders]
+      summary: List the current rider's deliveries
+      responses:
+        "200":
+          description: Current rider deliveries
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/DeliveryRequest"
+  /v1/sync:
+    post:
+      operationId: syncOfflineEvents
+      tags: [riders]
+      summary: Sync offline status events
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/SyncInput"
+      responses:
+        "200":
+          description: Sync results
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/SyncResult"
 components:
+  parameters:
+    DeliveryId:
+      name: id
+      in: path
+      required: true
+      schema:
+        type: string
+    Status:
+      name: status
+      in: query
+      schema:
+        $ref: "#/components/schemas/DeliveryStatus"
+    Search:
+      name: search
+      in: query
+      schema:
+        type: string
+    Limit:
+      name: limit
+      in: query
+      schema:
+        type: number
+        minimum: 1
+        maximum: 100
+        default: 50
+  responses:
+    NotFound:
+      description: Resource not found
+      content:
+        application/json:
+          schema:
+            $ref: "#/components/schemas/ErrorResponse"
+    Conflict:
+      description: Optimistic concurrency conflict
+      content:
+        application/json:
+          schema:
+            $ref: "#/components/schemas/ErrorResponse"
   schemas:
     HealthStatus:
       type: object
@@ -33,4 +286,163 @@ components:
           type: string
       required:
         - status
+    DeliveryStatus:
+      type: string
+      enum: [pending, assigned, picked_up, delivered, cancelled]
+    DeliveryRequest:
+      type: object
+      required: [id, reference, customerName, customerPhone, address, itemDescription, status, version, createdAt, updatedAt, qrToken]
+      properties:
+        id: { type: string }
+        reference: { type: string }
+        customerName: { type: string }
+        customerPhone: { type: string }
+        address: { type: string }
+        itemDescription: { type: string }
+        status: { $ref: "#/components/schemas/DeliveryStatus" }
+        riderId: { type: ["string", "null"] }
+        riderName: { type: ["string", "null"] }
+        version: { type: number }
+        createdAt: { type: string, format: date-time }
+        updatedAt: { type: string, format: date-time }
+        qrToken: { type: string }
+        proof: { $ref: "#/components/schemas/ProofOfDelivery" }
+    DeliveryRequestDetail:
+      allOf:
+        - $ref: "#/components/schemas/DeliveryRequest"
+        - type: object
+          required: [events, assignments]
+          properties:
+            events:
+              type: array
+              items: { $ref: "#/components/schemas/StatusEvent" }
+            assignments:
+              type: array
+              items: { $ref: "#/components/schemas/Assignment" }
+    DeliveryRequestInput:
+      type: object
+      required: [customerName, customerPhone, address, itemDescription]
+      properties:
+        customerName: { type: string, minLength: 2 }
+        customerPhone: { type: string, minLength: 7 }
+        address: { type: string, minLength: 4 }
+        itemDescription: { type: string, minLength: 2 }
+    AssignmentInput:
+      type: object
+      required: [riderId, version]
+      properties:
+        riderId: { type: string }
+        version: { type: number }
+    StatusUpdateInput:
+      type: object
+      required: [status, version, clientEventId]
+      properties:
+        status: { $ref: "#/components/schemas/DeliveryStatus" }
+        version: { type: number }
+        clientEventId: { type: string }
+    ProofOfDeliveryInput:
+      type: object
+      required: [qrToken, recipientName]
+      properties:
+        qrToken: { type: string }
+        recipientName: { type: string, minLength: 2 }
+        signatureData: { type: ["string", "null"] }
+        photoUrl: { type: ["string", "null"] }
+    ProofOfDelivery:
+      type: object
+      required: [recipientName, verifiedAt]
+      properties:
+        recipientName: { type: string }
+        signatureData: { type: ["string", "null"] }
+        photoUrl: { type: ["string", "null"] }
+        verifiedAt: { type: string, format: date-time }
+    StatusEvent:
+      type: object
+      required: [id, status, actorName, createdAt]
+      properties:
+        id: { type: string }
+        status: { $ref: "#/components/schemas/DeliveryStatus" }
+        actorName: { type: string }
+        createdAt: { type: string, format: date-time }
+        note: { type: ["string", "null"] }
+    Assignment:
+      type: object
+      required: [id, riderId, riderName, assignedAt, isCurrent]
+      properties:
+        id: { type: string }
+        riderId: { type: string }
+        riderName: { type: string }
+        assignedAt: { type: string, format: date-time }
+        isCurrent: { type: boolean }
+    Rider:
+      type: object
+      required: [id, name, phone, status, activeDeliveries]
+      properties:
+        id: { type: string }
+        name: { type: string }
+        phone: { type: string }
+        status:
+          type: string
+          enum: [available, on_route, offline]
+        activeDeliveries: { type: number }
+    DashboardSummary:
+      type: object
+      required: [totalToday, pending, assigned, pickedUp, delivered, cancelled, onTimeRate, activeRiders]
+      properties:
+        totalToday: { type: number }
+        pending: { type: number }
+        assigned: { type: number }
+        pickedUp: { type: number }
+        delivered: { type: number }
+        cancelled: { type: number }
+        onTimeRate: { type: number }
+        activeRiders: { type: number }
+    ActivityItem:
+      type: object
+      required: [id, deliveryId, reference, status, actorName, createdAt]
+      properties:
+        id: { type: string }
+        deliveryId: { type: string }
+        reference: { type: string }
+        status: { $ref: "#/components/schemas/DeliveryStatus" }
+        actorName: { type: string }
+        createdAt: { type: string, format: date-time }
+        note: { type: ["string", "null"] }
+    SyncInput:
+      type: object
+      required: [events]
+      properties:
+        events:
+          type: array
+          items:
+            $ref: "#/components/schemas/OfflineEvent"
+    OfflineEvent:
+      type: object
+      required: [deliveryId, status, version, clientEventId]
+      properties:
+        deliveryId: { type: string }
+        status: { $ref: "#/components/schemas/DeliveryStatus" }
+        version: { type: number }
+        clientEventId: { type: string }
+    SyncResult:
+      type: object
+      required: [accepted, duplicate, rejected]
+      properties:
+        accepted: { type: number }
+        duplicate: { type: number }
+        rejected: { type: number }
+        deliveries:
+          type: array
+          items: { $ref: "#/components/schemas/DeliveryRequest" }
+    ErrorResponse:
+      type: object
+      required: [error]
+      properties:
+        error:
+          type: object
+          required: [code, message]
+          properties:
+            code: { type: string }
+            message: { type: string }
+            details: {}
 

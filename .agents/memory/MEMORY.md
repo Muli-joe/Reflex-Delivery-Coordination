@@ -1,0 +1,1 @@
+- [OpenAPI/Zod compatibility](openapi-zod-compatibility.md) — Zod 3 in this workspace does not support generated `zod.int()` helpers.
