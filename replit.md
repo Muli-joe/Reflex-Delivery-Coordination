@@ -1,6 +1,6 @@
-# Reflex Delivery Coordination
+# RiderLink Delivery Coordination
 
-Reflex helps Kenyan retailers create, assign, track, and verify deliveries from one shared operations desk.
+RiderLink helps Kenyan retailers create, assign, track, and verify deliveries from one shared operations desk.
 
 ## Run & Operate
 

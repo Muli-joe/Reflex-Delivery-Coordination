@@ -22,7 +22,7 @@ export function Shell({ children }) {
       <aside className={`reflex-sidebar ${open ? 'open' : ''}`}>
         <Link href="/" className="brand-mark" data-testid="link-brand" onClick={() => setOpen(false)}>
           <span className="brand-symbol">R</span>
-          <span><span className="brand-name">reflex</span><span className="brand-sub">operations desk</span></span>
+          <span><span className="brand-name">RiderLink</span><span className="brand-sub">operations desk</span></span>
         </Link>
         <div className="nav-label">Workspace</div>
         <nav aria-label="Main navigation">

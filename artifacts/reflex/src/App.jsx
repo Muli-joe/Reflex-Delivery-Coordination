@@ -85,7 +85,7 @@ function LandingPage() {
         <Link href="/" className="brand-mark auth-brand">
           <span className="brand-symbol">R</span>
           <span>
-            <span className="brand-name">reflex</span>
+            <span className="brand-name">RiderLink</span>
             <span className="brand-sub">operations desk</span>
           </span>
         </Link>
@@ -93,7 +93,7 @@ function LandingPage() {
           <div className="eyebrow">Delivery coordination for teams on the move</div>
           <h1>Keep every handoff moving.</h1>
           <p>
-            Reflex gives Kenyan retailers one calm place to dispatch deliveries,
+            RiderLink gives Kenyan retailers one calm place to dispatch deliveries,
             support riders, and see what needs attention next.
           </p>
           <div className="auth-proof">
@@ -109,14 +109,14 @@ function LandingPage() {
       </section>
       <section className="auth-landing-action">
         <div className="auth-welcome-card">
-          <span className="auth-kicker">Welcome to Reflex</span>
+          <span className="auth-kicker">Welcome to RiderLink</span>
           <h2>Your desk is ready.</h2>
           <p>Sign in to pick up where your team left off.</p>
           <Link href="/sign-in" className="btn btn-primary auth-cta" data-testid="link-sign-in">
             Sign in to your desk
           </Link>
           <p className="auth-secondary-copy">
-            New to Reflex? <Link href="/sign-up" data-testid="link-sign-up">Create an account</Link>
+            New to RiderLink? <Link href="/sign-up" data-testid="link-sign-up">Create an account</Link>
           </p>
         </div>
       </section>
@@ -131,7 +131,7 @@ function SignInPage() {
         <Link href="/" className="brand-mark auth-brand">
           <span className="brand-symbol">R</span>
           <span>
-            <span className="brand-name">reflex</span>
+            <span className="brand-name">RiderLink</span>
             <span className="brand-sub">operations desk</span>
           </span>
         </Link>
@@ -159,14 +159,14 @@ function SignUpPage() {
         <Link href="/" className="brand-mark auth-brand">
           <span className="brand-symbol">R</span>
           <span>
-            <span className="brand-name">reflex</span>
+            <span className="brand-name">RiderLink</span>
             <span className="brand-sub">operations desk</span>
           </span>
         </Link>
         <div className="auth-page-message">
           <div className="eyebrow">Start with a clear handoff</div>
           <h1>Give your team room to move.</h1>
-          <p>Create a Reflex workspace for the people coordinating every delivery.</p>
+          <p>Create a RiderLink workspace for the people coordinating every delivery.</p>
         </div>
       </div>
       <div className="auth-form-wrap">
@@ -271,7 +271,7 @@ function ClerkApp() {
         },
         signUp: {
           start: {
-            title: 'Create your Reflex workspace',
+            title: 'Create your RiderLink workspace',
             subtitle: 'Keep every handoff moving',
           },
         },
