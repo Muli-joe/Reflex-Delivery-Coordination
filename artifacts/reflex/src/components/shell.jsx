@@ -1,4 +1,4 @@
-import { useState, type ReactNode } from 'react';
+import { useState } from 'react';
 import { Bell, ClipboardList, LayoutDashboard, Menu, Settings, Bike, X } from 'lucide-react';
 import { Link, useLocation } from 'wouter';
 import { useHealthCheck } from '@workspace/api-client-react';
@@ -11,11 +11,12 @@ const navItems = [
   { href: '/settings', label: 'Settings', icon: Settings },
 ];
 
-export function Shell({ children }: { children: ReactNode }) {
+export function Shell({ children }) {
   const [location] = useLocation();
   const [open, setOpen] = useState(false);
   const health = useHealthCheck();
-  const active = (href: string) => href === '/' ? location === '/' : location.startsWith(href);
+  const active = (href) => href === '/' ? location === '/' : location.startsWith(href);
+
   return (
     <div className="reflex-shell">
       <aside className={`reflex-sidebar ${open ? 'open' : ''}`}>
@@ -56,33 +57,33 @@ export function Shell({ children }: { children: ReactNode }) {
   );
 }
 
-export function StatusBadge({ status }: { status: string }) {
-  const labels: Record<string, string> = { pending: 'Pending', assigned: 'Assigned', picked_up: 'Picked up', delivered: 'Delivered', cancelled: 'Cancelled' };
+export function StatusBadge({ status }) {
+  const labels = { pending: 'Pending', assigned: 'Assigned', picked_up: 'Picked up', delivered: 'Delivered', cancelled: 'Cancelled' };
   return <span className={`status-badge ${status}`} data-testid={`status-badge-${status}`}><span className={`status-dot ${status}`} />{labels[status] ?? status}</span>;
 }
 
-export function formatTime(value?: string) {
+export function formatTime(value) {
   if (!value) return '—';
   const date = new Date(value);
   if (Number.isNaN(date.getTime())) return value;
   return date.toLocaleTimeString('en-KE', { hour: '2-digit', minute: '2-digit' });
 }
 
-export function formatDate(value?: string) {
+export function formatDate(value) {
   if (!value) return '—';
   const date = new Date(value);
   if (Number.isNaN(date.getTime())) return value;
   return date.toLocaleDateString('en-KE', { day: 'numeric', month: 'short' });
 }
 
-export function initials(name?: string | null) {
+export function initials(name) {
   return (name ?? 'Unassigned').split(' ').map((part) => part[0]).join('').slice(0, 2).toUpperCase();
 }
 
-export function ErrorState({ onRetry }: { onRetry: () => void }) {
+export function ErrorState({ onRetry }) {
   return <div className="error-state" data-testid="state-error">We could not reach the desk right now. Check your connection and try again. <button className="btn btn-danger" data-testid="button-retry" onClick={onRetry} style={{ marginLeft: 8, padding: '6px 9px' }}>Retry</button></div>;
 }
 
-export function LoadingRows({ count = 4 }: { count?: number }) {
+export function LoadingRows({ count = 4 }) {
   return <div data-testid="state-loading">{Array.from({ length: count }).map((_, index) => <div key={index} className="skeleton" style={{ height: 62, marginBottom: 1 }} />)}</div>;
 }

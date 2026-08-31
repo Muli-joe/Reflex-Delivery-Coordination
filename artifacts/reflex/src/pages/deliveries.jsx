@@ -2,18 +2,17 @@ import { useEffect, useState } from 'react';
 import { Check, ChevronRight, MapPin, Phone, Plus, X } from 'lucide-react';
 import { useQueryClient } from '@tanstack/react-query';
 import { useAssignDeliveryRequest, useCancelDeliveryRequest, useGetDeliveryRequest, useListDeliveryRequests, useListRiders, useUpdateDeliveryStatus, getGetDashboardSummaryQueryKey, getGetDeliveryRequestQueryKey, getListActivityQueryKey, getListRidersQueryKey } from '@workspace/api-client-react';
-import type { DeliveryStatus, DeliveryRequestDetail, Rider } from '@workspace/api-client-react';
 import { NewDeliveryDialog } from '@/components/delivery-dialog';
 import { ErrorState, LoadingRows, StatusBadge, formatDate, formatTime } from '@/components/shell';
 
 export default function Deliveries() {
   const [search, setSearch] = useState('');
   const [status, setStatus] = useState('');
-  const [selectedId, setSelectedId] = useState<string | null>(null);
+  const [selectedId, setSelectedId] = useState(null);
   const [newOpen, setNewOpen] = useState(false);
   const deliveries = useListDeliveryRequests({
     search: search || undefined,
-    status: (status || undefined) as DeliveryStatus | undefined,
+    status: status || undefined,
     limit: 100,
   });
   const queryClient = useQueryClient();
@@ -112,23 +111,7 @@ export default function Deliveries() {
   );
 }
 
-function DeliveryDrawer({
-  id,
-  detail,
-  isLoading,
-  isError,
-  riders,
-  onClose,
-  onRefresh,
-}: {
-  id: string;
-  detail?: DeliveryRequestDetail;
-  isLoading: boolean;
-  isError: boolean;
-  riders: Rider[];
-  onClose: () => void;
-  onRefresh: () => void;
-}) {
+function DeliveryDrawer({ id, detail, isLoading, isError, riders, onClose, onRefresh }) {
   const [riderId, setRiderId] = useState('');
   const queryClient = useQueryClient();
   const assign = useAssignDeliveryRequest();
@@ -145,7 +128,7 @@ function DeliveryDrawer({
     onRefresh();
   };
 
-  const move = (next: 'assigned' | 'picked_up') => {
+  const move = (next) => {
     if (!currentDetail) return;
     update.mutate({
       id,
