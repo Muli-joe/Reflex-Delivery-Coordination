@@ -5,7 +5,7 @@ Reflex helps Kenyan retailers create, assign, track, and verify deliveries from 
 ## Run & Operate
 
 - `pnpm --filter @workspace/api-server run dev` — run the Node.js/Express API server
-- `pnpm run typecheck` — full typecheck across all packages
+- `pnpm run check` — run JavaScript syntax checks across packages
 - `pnpm run build` — typecheck + build all packages
 - `pnpm --filter @workspace/api-spec run codegen` — regenerate API hooks and Zod schemas from the OpenAPI spec
 - `lib/db/schema.sql` — PostgreSQL schema reference for the database
@@ -26,7 +26,7 @@ Reflex helps Kenyan retailers create, assign, track, and verify deliveries from 
 - `artifacts/api-server/src/routes/reflex.js` — delivery API routes and state transitions.
 - `lib/api-spec/openapi.yaml` — source of truth for API contracts.
 - `lib/db/schema.sql` — PostgreSQL schema for businesses, users, deliveries, assignments, events, and proof.
-- `lib/api-client-react/src/generated/` and `lib/api-zod/src/generated/` — generated client and validation code.
+- `lib/api-client-react/src/index.js` and `lib/api-zod/src/index.js` — JavaScript API client and validation modules.
 
 ## Architecture decisions
 

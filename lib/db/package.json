@@ -5,11 +5,10 @@
   "type": "module",
   "exports": {
     ".": "./src/index.js",
-    "./schema": "./src/schema/index.ts"
+    "./schema": "./schema.sql"
   },
   "scripts": {
-    "push": "drizzle-kit push --config ./drizzle.config.ts",
-    "push-force": "drizzle-kit push --force --config ./drizzle.config.ts"
+    "schema": "psql \"$DATABASE_URL\" -f ./schema.sql"
   },
   "dependencies": {
     "drizzle-orm": "catalog:",
