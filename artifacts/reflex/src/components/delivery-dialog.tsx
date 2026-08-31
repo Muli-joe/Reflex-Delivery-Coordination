@@ -1,6 +1,6 @@
 import { useState, type ChangeEvent, type FormEvent } from 'react';
 import { X, ArrowUpRight } from 'lucide-react';
-import { useCreateDeliveryRequest, getListDeliveryRequestsQueryKey, getGetDashboardSummaryQueryKey, getListActivityQueryKey } from '@workspace/api-client-react';
+import { useCreateDeliveryRequest, getGetDashboardSummaryQueryKey, getListActivityQueryKey } from '@workspace/api-client-react';
 import { useQueryClient } from '@tanstack/react-query';
 
 export function NewDeliveryDialog({ onClose }: { onClose: () => void }) {
@@ -11,7 +11,7 @@ export function NewDeliveryDialog({ onClose }: { onClose: () => void }) {
   const submit = (event: FormEvent) => {
     event.preventDefault();
     create.mutate({ data: form }, { onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: getListDeliveryRequestsQueryKey() });
+      queryClient.invalidateQueries({ predicate: ({ queryKey }) => queryKey[0] === '/api/v1/delivery-requests' });
       queryClient.invalidateQueries({ queryKey: getGetDashboardSummaryQueryKey() });
       queryClient.invalidateQueries({ queryKey: getListActivityQueryKey({ limit: 8 }) });
       onClose();
