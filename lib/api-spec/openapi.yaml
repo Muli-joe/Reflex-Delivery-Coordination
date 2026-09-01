@@ -188,7 +188,7 @@ paths:
               schema:
                 $ref: "#/components/schemas/DeliveryRequest"
         "422":
-          description: QR token mismatch or invalid proof
+          description: Invalid proof state
           content:
             application/json:
               schema:
@@ -291,7 +291,7 @@ components:
       enum: [pending, assigned, picked_up, delivered, cancelled]
     DeliveryRequest:
       type: object
-      required: [id, reference, customerName, customerPhone, address, itemDescription, status, version, createdAt, updatedAt, qrToken]
+      required: [id, reference, customerName, customerPhone, address, itemDescription, status, version, createdAt, updatedAt]
       properties:
         id: { type: string }
         reference: { type: string }
@@ -305,7 +305,6 @@ components:
         version: { type: number }
         createdAt: { type: string, format: date-time }
         updatedAt: { type: string, format: date-time }
-        qrToken: { type: string }
         proof: { $ref: "#/components/schemas/ProofOfDelivery" }
     DeliveryRequestDetail:
       allOf:
@@ -342,9 +341,8 @@ components:
         clientEventId: { type: string }
     ProofOfDeliveryInput:
       type: object
-      required: [qrToken, recipientName]
+      required: [recipientName]
       properties:
-        qrToken: { type: string }
         recipientName: { type: string, minLength: 2 }
         signatureData: { type: ["string", "null"] }
         photoUrl: { type: ["string", "null"] }

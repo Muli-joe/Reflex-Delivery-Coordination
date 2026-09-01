@@ -63,7 +63,6 @@ async function getDelivery(id, executor = query) {
       d.version,
       d.created_at AS "createdAt",
       d.updated_at AS "updatedAt",
-      d.qr_token AS "qrToken",
       a.rider_id AS "riderId",
       u.name AS "riderName",
       p.recipient_name AS "proofRecipientName",
@@ -93,7 +92,6 @@ async function getDelivery(id, executor = query) {
     version: row.version,
     createdAt: row.createdAt,
     updatedAt: row.updatedAt,
-    qrToken: row.qrToken,
     ...(row.proofRecipientName ? {
       proof: {
         recipientName: row.proofRecipientName,
@@ -411,17 +409,13 @@ router.post('/v1/delivery-requests/:id/pod', async (req, res) => {
   const params = SubmitProofOfDeliveryParams.safeParse(req.params);
   const body = SubmitProofOfDeliveryBody.safeParse(req.body);
   if (!params.success || !validId(params.data.id) || !body.success) {
-    res.status(400).json(errorResponse('INVALID_REQUEST', 'QR token and recipient name are required'));
+    res.status(400).json(errorResponse('INVALID_REQUEST', 'Recipient name is required'));
     return;
   }
 
   const current = await getDelivery(params.data.id);
   if (!current) {
     res.status(404).json(errorResponse('NOT_FOUND', 'Delivery request not found'));
-    return;
-  }
-  if (current.qrToken !== body.data.qrToken) {
-    res.status(422).json(errorResponse('QR_MISMATCH', 'That code does not belong to this delivery.'));
     return;
   }
   if (current.status !== 'picked_up') {

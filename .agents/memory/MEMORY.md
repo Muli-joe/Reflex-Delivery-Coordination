@@ -1,1 +1,2 @@
 - [OpenAPI/Zod compatibility](openapi-zod-compatibility.md) — Zod 3 in this workspace does not support generated `zod.int()` helpers.
+- [Managed Clerk verification](managed-clerk-verification.md) — Replit-managed email verification is tenant-controlled, not bypassed in application code.
