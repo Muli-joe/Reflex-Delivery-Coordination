@@ -393,7 +393,7 @@ components:
         pickedUp: { type: number }
         delivered: { type: number }
         cancelled: { type: number }
-        onTimeRate: { type: number }
+        onTimeRate: { type: [number, "null"] }
         activeRiders: { type: number }
     ActivityItem:
       type: object
@@ -424,11 +424,14 @@ components:
         clientEventId: { type: string }
     SyncResult:
       type: object
-      required: [accepted, duplicate, rejected]
+      required: [accepted, duplicate, rejected, processedEventIds]
       properties:
         accepted: { type: number }
         duplicate: { type: number }
         rejected: { type: number }
+        processedEventIds:
+          type: array
+          items: { type: string }
         deliveries:
           type: array
           items: { $ref: "#/components/schemas/DeliveryRequest" }

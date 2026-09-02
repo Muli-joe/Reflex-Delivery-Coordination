@@ -1,0 +1,14 @@
+export default function Slide07Proof() {
+  return (
+    <div className="deck-grid relative w-screen h-screen overflow-hidden bg-bg text-text">
+      <div className="relative flex h-full flex-col px-[7vw] py-[6vh]">
+        <div className="flex items-center justify-between font-body text-[1vw] font-bold uppercase tracking-[.24em] text-primary"><span>06 / Final handoff</span><span className="text-muted">RiderLink</span></div>
+        <div className="mt-[8vh] grid flex-1 grid-cols-[1fr_1fr] gap-[8vw]">
+          <div className="flex flex-col justify-center"><div className="grid h-[7vw] w-[7vw] place-items-center rounded-full bg-accent font-display text-[4vw] font-extrabold text-primary">✓</div><div className="mt-[4vh] font-body text-[1vw] font-bold uppercase tracking-[.24em] text-coral">Simple proof, captured</div><h2 className="mt-[2.2vh] max-w-[38vw] font-display text-[4.35vw] font-extrabold leading-[.98] tracking-[-.065em] text-balance">Proof without unnecessary friction</h2></div>
+          <div className="flex items-center"><div className="paper-shadow w-full border border-primary/10 bg-[#fbf9f5] p-[2vw]"><div className="flex items-center justify-between border-b border-primary/10 pb-[1.4vw]"><div><div className="font-body text-[.9vw] font-bold uppercase tracking-[.18em] text-muted">Final handoff</div><div className="mt-[.7vh] font-display text-[1.8vw] font-bold">RL-1046 · Lavington</div></div><span className="rounded-full bg-sage/55 px-[.8vw] py-[.4vw] font-body text-[.85vw] font-bold text-primary">Picked up</span></div><div className="mt-[2vw] space-y-[1.1vw]"><div className="border border-primary/15 bg-bg p-[1vw]"><div className="font-body text-[.85vw] font-bold text-muted">Recipient name</div><div className="mt-[.55vh] font-body text-[1.25vw]">Amina Wanjiku</div></div><div className="border border-primary/15 bg-bg p-[1vw]"><div className="font-body text-[.85vw] font-bold text-muted">Signature or initials</div><div className="mt-[.55vh] font-display text-[1.5vw] font-bold italic">AW</div></div><div className="border border-primary/15 bg-bg p-[1vw]"><div className="font-body text-[.85vw] font-bold text-muted">Photo link <span className="font-normal">(optional)</span></div><div className="mt-[.55vh] font-body text-[1.1vw] text-muted">No photo added</div></div></div><div className="mt-[1.5vw] flex items-center justify-between border-t border-primary/10 pt-[1.3vw]"><span className="font-body text-[.95vw] text-muted">Ready to confirm</span><span className="bg-primary px-[1.2vw] py-[.7vw] font-body text-[.95vw] font-bold text-[#f7f3ec]">Confirm handoff</span></div></div></div>
+        </div>
+        <div className="flex justify-between font-body text-[1vw] text-muted"><span>Confirm the final handoff without a delivery-code check</span><span>07 / 12</span></div>
+      </div>
+    </div>
+  );
+}

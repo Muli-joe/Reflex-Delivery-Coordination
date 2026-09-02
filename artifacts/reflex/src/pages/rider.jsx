@@ -38,9 +38,15 @@ export default function RiderMode() {
   const syncQueue = () => {
     if (!queue.length || !online) return;
     sync.mutate({ data: { events: queue } }, {
-      onSuccess: () => {
-        localStorage.removeItem(queueKey);
-        setQueue([]);
+      onSuccess: (result) => {
+        const processed = new Set(result.processedEventIds ?? []);
+        const remaining = queue.filter((event) => !processed.has(event.clientEventId));
+        if (remaining.length) {
+          localStorage.setItem(queueKey, JSON.stringify(remaining));
+        } else {
+          localStorage.removeItem(queueKey);
+        }
+        setQueue(remaining);
         queryClient.invalidateQueries({ queryKey: getListMyDeliveriesQueryKey() });
         queryClient.invalidateQueries({ queryKey: getGetDashboardSummaryQueryKey() });
       },

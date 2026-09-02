@@ -8,12 +8,19 @@ CREATE TABLE IF NOT EXISTS businesses (
 CREATE TABLE IF NOT EXISTS users (
   id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
   business_id uuid NOT NULL REFERENCES businesses(id),
+  clerk_user_id text,
   name text NOT NULL,
   phone text NOT NULL,
   role text NOT NULL,
   is_active boolean NOT NULL DEFAULT true,
   created_at timestamptz NOT NULL DEFAULT now()
 );
+
+-- Clerk is the source of authentication; this column binds an authenticated
+-- Clerk identity to exactly one RiderLink user and therefore one business.
+ALTER TABLE users ADD COLUMN IF NOT EXISTS clerk_user_id text;
+CREATE UNIQUE INDEX IF NOT EXISTS users_clerk_user_id_unique
+  ON users (clerk_user_id) WHERE clerk_user_id IS NOT NULL;
 
 CREATE TABLE IF NOT EXISTS delivery_requests (
   id uuid PRIMARY KEY DEFAULT gen_random_uuid(),

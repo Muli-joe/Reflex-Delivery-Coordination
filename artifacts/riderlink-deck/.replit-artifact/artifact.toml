@@ -1,0 +1,28 @@
+kind = "slides"
+previewPath = "/riderlink-deck/"
+title = "RiderLink Project Overview"
+description = "A professional 12-slide overview of RiderLink, a delivery coordination platform for Kenyan retail operations, covering the product workflow, rider experience, reliability approach, and technical foundation."
+version = "1.0.0"
+id = "artifacts/riderlink-deck"
+router = "path"
+
+[[services]]
+name = "web"
+paths = [ "/riderlink-deck/" ]
+localPort = 20916
+
+[services.development]
+run = "pnpm --filter @workspace/riderlink-deck run dev"
+
+[services.production]
+build = [ "pnpm", "--filter", "@workspace/riderlink-deck", "run", "build" ]
+serve = "static"
+publicDir = "artifacts/riderlink-deck/dist/public"
+
+[[services.production.rewrites]]
+from = "/*"
+to = "/index.html"
+
+[services.env]
+PORT = "20916"
+BASE_PATH = "/riderlink-deck/"

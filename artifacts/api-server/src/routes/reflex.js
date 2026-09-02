@@ -29,9 +29,21 @@ import {
 import { query, withTransaction } from '@workspace/db';
 
 const router = Router();
-const BUSINESS_ID = '00000000-0000-0000-0000-000000000001';
-const DEFAULT_RIDER_ID = '00000000-0000-0000-0000-000000000011';
 const STATUSES = ['pending', 'assigned', 'picked_up', 'delivered', 'cancelled'];
+
+function requireDispatcher(req, res, next) {
+  if (!['admin', 'dispatcher', 'owner'].includes(req.actor.role)) {
+    return res.status(403).json(errorResponse('FORBIDDEN', 'Dispatcher access is required'));
+  }
+  next();
+}
+
+function requireRider(req, res, next) {
+  if (req.actor.role !== 'rider') {
+    return res.status(403).json(errorResponse('FORBIDDEN', 'Rider access is required'));
+  }
+  next();
+}
 
 function isStatus(value) {
   return STATUSES.includes(value);
@@ -50,7 +62,7 @@ async function rows(executor, text, params = []) {
   return result.rows;
 }
 
-async function getDelivery(id, executor = query) {
+async function getDelivery(id, businessId, executor = query) {
   const [row] = await rows(executor, `
     SELECT
       d.id,
@@ -75,7 +87,7 @@ async function getDelivery(id, executor = query) {
     LEFT JOIN users u ON u.id = a.rider_id
     LEFT JOIN proof_of_delivery p ON p.delivery_request_id = d.id
     WHERE d.id = $1 AND d.business_id = $2
-  `, [id, BUSINESS_ID]);
+  `, [id, businessId]);
 
   if (!row) return undefined;
 
@@ -103,8 +115,8 @@ async function getDelivery(id, executor = query) {
   };
 }
 
-async function getDetailedDelivery(id) {
-  const delivery = await getDelivery(id);
+async function getDetailedDelivery(id, businessId) {
+  const delivery = await getDelivery(id, businessId);
   if (!delivery) return undefined;
 
   const [events, assignments] = await Promise.all([
@@ -119,7 +131,7 @@ async function getDetailedDelivery(id) {
       INNER JOIN delivery_requests d ON d.id = e.delivery_request_id
       WHERE e.delivery_request_id = $1 AND d.business_id = $2
       ORDER BY e.created_at DESC
-    `, [id, BUSINESS_ID]),
+    `, [id, businessId]),
     rows(query, `
       SELECT
         a.id,
@@ -132,7 +144,7 @@ async function getDetailedDelivery(id) {
       INNER JOIN delivery_requests d ON d.id = a.delivery_request_id
       WHERE a.delivery_request_id = $1 AND d.business_id = $2
       ORDER BY a.assigned_at DESC
-    `, [id, BUSINESS_ID]),
+    `, [id, businessId]),
   ]);
 
   return { ...delivery, events, assignments };
@@ -146,20 +158,33 @@ async function addStatusEvent(deliveryId, status, actorName, clientEventId = nul
   `, [deliveryId, status, actorName, clientEventId, note]);
 }
 
-async function transition(id, nextStatus, version, clientEventId, actorName, executor = query) {
+async function transition(id, businessId, nextStatus, version, clientEventId, actorName, executor = query) {
   const changed = await rows(executor, `
     UPDATE delivery_requests
     SET status = $1, version = $2 + 1, updated_at = now()
     WHERE id = $3 AND business_id = $4 AND version = $2
     RETURNING id
-  `, [nextStatus, version, id, BUSINESS_ID]);
+  `, [nextStatus, version, id, businessId]);
 
   if (!changed.length) return false;
   await addStatusEvent(id, nextStatus, actorName, clientEventId, null, executor);
   return true;
 }
 
-router.get('/v1/dashboard/summary', async (_req, res) => {
+async function isCurrentRider(deliveryId, actor) {
+  const [assignment] = await rows(query, `
+    SELECT 1
+    FROM assignments a
+    INNER JOIN delivery_requests d ON d.id = a.delivery_request_id
+    WHERE a.delivery_request_id = $1
+      AND a.rider_id = $2
+      AND a.is_current = true
+      AND d.business_id = $3
+  `, [deliveryId, actor.id, actor.businessId]);
+  return Boolean(assignment);
+}
+
+router.get('/v1/dashboard/summary', requireDispatcher, async (req, res) => {
   const [summaryRow] = await rows(query, `
     SELECT
       count(*)::int AS "totalToday",
@@ -170,12 +195,13 @@ router.get('/v1/dashboard/summary', async (_req, res) => {
       count(*) FILTER (WHERE status = 'cancelled')::int AS cancelled
     FROM delivery_requests
     WHERE business_id = $1
-  `, [BUSINESS_ID]);
+      AND (created_at AT TIME ZONE 'Africa/Nairobi')::date = (now() AT TIME ZONE 'Africa/Nairobi')::date
+  `, [req.actor.businessId]);
   const [riderRow] = await rows(query, `
     SELECT count(*)::int AS "activeRiders"
     FROM users
     WHERE business_id = $1 AND role = 'rider' AND is_active = true
-  `, [BUSINESS_ID]);
+  `, [req.actor.businessId]);
 
   const summary = {
     totalToday: Number(summaryRow?.totalToday ?? 0),
@@ -184,13 +210,15 @@ router.get('/v1/dashboard/summary', async (_req, res) => {
     pickedUp: Number(summaryRow?.pickedUp ?? 0),
     delivered: Number(summaryRow?.delivered ?? 0),
     cancelled: Number(summaryRow?.cancelled ?? 0),
-    onTimeRate: Number(summaryRow?.totalToday ?? 0) ? 94.2 : 0,
+    // There is no promised-delivery timestamp in the schema, so an on-time
+    // rate cannot be calculated honestly yet.
+    onTimeRate: null,
     activeRiders: Number(riderRow?.activeRiders ?? 0),
   };
   res.json(GetDashboardSummaryResponse.parse(summary));
 });
 
-router.get('/v1/activity', async (req, res) => {
+router.get('/v1/activity', requireDispatcher, async (req, res) => {
   const parsed = ListActivityQueryParams.safeParse(req.query);
   if (!parsed.success) {
     res.status(400).json(errorResponse('INVALID_QUERY', parsed.error.message));
@@ -211,19 +239,19 @@ router.get('/v1/activity', async (req, res) => {
     WHERE d.business_id = $1
     ORDER BY e.created_at DESC
     LIMIT $2
-  `, [BUSINESS_ID, parsed.data.limit]);
+  `, [req.actor.businessId, parsed.data.limit]);
 
   res.json(ListActivityResponse.parse(activity.filter((item) => isStatus(item.status))));
 });
 
-router.get('/v1/delivery-requests', async (req, res) => {
+router.get('/v1/delivery-requests', requireDispatcher, async (req, res) => {
   const parsed = ListDeliveryRequestsQueryParams.safeParse(req.query);
   if (!parsed.success) {
     res.status(400).json(errorResponse('INVALID_QUERY', parsed.error.message));
     return;
   }
 
-  const params = [BUSINESS_ID];
+  const params = [req.actor.businessId];
   let sql = `
     SELECT id
     FROM delivery_requests
@@ -246,11 +274,11 @@ router.get('/v1/delivery-requests', async (req, res) => {
   sql += ` ORDER BY created_at DESC LIMIT $${params.length}`;
 
   const requestRows = await rows(query, sql, params);
-  const deliveries = await Promise.all(requestRows.map((row) => getDelivery(row.id)));
+  const deliveries = await Promise.all(requestRows.map((row) => getDelivery(row.id, req.actor.businessId)));
   res.json(ListDeliveryRequestsResponse.parse(deliveries.filter(Boolean)));
 });
 
-router.post('/v1/delivery-requests', async (req, res) => {
+router.post('/v1/delivery-requests', requireDispatcher, async (req, res) => {
   const parsed = CreateDeliveryRequestBody.safeParse(req.body);
   if (!parsed.success) {
     res.status(400).json(errorResponse('INVALID_BODY', parsed.error.message));
@@ -264,7 +292,7 @@ router.post('/v1/delivery-requests', async (req, res) => {
     VALUES ($1, $2, $3, $4, $5, $6, $7)
     RETURNING id
   `, [
-    BUSINESS_ID,
+    req.actor.businessId,
     reference,
     parsed.data.customerName,
     parsed.data.customerPhone,
@@ -272,19 +300,19 @@ router.post('/v1/delivery-requests', async (req, res) => {
     parsed.data.itemDescription,
     `REFLEX-${randomUUID()}`,
   ]);
-  await addStatusEvent(created.id, 'pending', 'You', null, 'Request created');
-  const delivery = await getDelivery(created.id);
+  await addStatusEvent(created.id, 'pending', req.actor.name, null, 'Request created');
+  const delivery = await getDelivery(created.id, req.actor.businessId);
   res.status(201).json(CreateDeliveryRequestResponse.parse(delivery));
 });
 
-router.get('/v1/delivery-requests/:id', async (req, res) => {
+router.get('/v1/delivery-requests/:id', requireDispatcher, async (req, res) => {
   const params = GetDeliveryRequestParams.safeParse(req.params);
   if (!params.success || !validId(params.data.id)) {
     res.status(400).json(errorResponse('INVALID_ID', 'Delivery id is invalid'));
     return;
   }
 
-  const delivery = await getDetailedDelivery(params.data.id);
+  const delivery = await getDetailedDelivery(params.data.id, req.actor.businessId);
   if (!delivery) {
     res.status(404).json(errorResponse('NOT_FOUND', 'Delivery request not found'));
     return;
@@ -292,7 +320,7 @@ router.get('/v1/delivery-requests/:id', async (req, res) => {
   res.json(GetDeliveryRequestResponse.parse(delivery));
 });
 
-router.post('/v1/delivery-requests/:id/assign', async (req, res) => {
+router.post('/v1/delivery-requests/:id/assign', requireDispatcher, async (req, res) => {
   const params = AssignDeliveryRequestParams.safeParse(req.params);
   const body = AssignDeliveryRequestBody.safeParse(req.body);
   if (!params.success || !validId(params.data.id) || !body.success) {
@@ -304,7 +332,7 @@ router.post('/v1/delivery-requests/:id/assign', async (req, res) => {
     SELECT id, name
     FROM users
     WHERE id = $1 AND business_id = $2 AND role = 'rider' AND is_active = true
-  `, [body.data.riderId, BUSINESS_ID]);
+  `, [body.data.riderId, req.actor.businessId]);
   if (!rider) {
     res.status(404).json(errorResponse('RIDER_NOT_FOUND', 'Rider is not available'));
     return;
@@ -318,7 +346,7 @@ router.post('/v1/delivery-requests/:id/assign', async (req, res) => {
         SET status = 'assigned', version = $1 + 1, updated_at = now()
         WHERE id = $2 AND business_id = $3 AND version = $1
         RETURNING id
-      `, [body.data.version, params.data.id, BUSINESS_ID]);
+      `, [body.data.version, params.data.id, req.actor.businessId]);
       if (!changed.length) {
         const error = new Error('VERSION_CONFLICT');
         error.code = 'VERSION_CONFLICT';
@@ -334,7 +362,7 @@ router.post('/v1/delivery-requests/:id/assign', async (req, res) => {
         INSERT INTO assignments (delivery_request_id, rider_id)
         VALUES ($1, $2)
       `, [params.data.id, body.data.riderId]);
-      await addStatusEvent(params.data.id, 'assigned', 'You', null, `Assigned to ${rider.name}`, txQuery);
+      await addStatusEvent(params.data.id, 'assigned', req.actor.name, null, `Assigned to ${rider.name}`, txQuery);
     });
   } catch (error) {
     if (error.code === 'VERSION_CONFLICT') {
@@ -344,18 +372,18 @@ router.post('/v1/delivery-requests/:id/assign', async (req, res) => {
     throw error;
   }
 
-  const delivery = await getDelivery(params.data.id);
+  const delivery = await getDelivery(params.data.id, req.actor.businessId);
   res.json(AssignDeliveryRequestResponse.parse(delivery));
 });
 
-router.post('/v1/delivery-requests/:id/cancel', async (req, res) => {
+router.post('/v1/delivery-requests/:id/cancel', requireDispatcher, async (req, res) => {
   const params = CancelDeliveryRequestParams.safeParse(req.params);
   if (!params.success || !validId(params.data.id)) {
     res.status(400).json(errorResponse('INVALID_ID', 'Delivery id is invalid'));
     return;
   }
 
-  const current = await getDelivery(params.data.id);
+  const current = await getDelivery(params.data.id, req.actor.businessId);
   if (!current) {
     res.status(404).json(errorResponse('NOT_FOUND', 'Delivery request not found'));
     return;
@@ -365,16 +393,16 @@ router.post('/v1/delivery-requests/:id/cancel', async (req, res) => {
     return;
   }
 
-  const changed = await transition(params.data.id, 'cancelled', current.version, randomUUID(), 'You');
+  const changed = await transition(params.data.id, req.actor.businessId, 'cancelled', current.version, randomUUID(), req.actor.name);
   if (!changed) {
     res.status(409).json(errorResponse('VERSION_CONFLICT', 'This delivery changed. Refresh and try again.'));
     return;
   }
-  const delivery = await getDelivery(params.data.id);
+  const delivery = await getDelivery(params.data.id, req.actor.businessId);
   res.json(CancelDeliveryRequestResponse.parse(delivery));
 });
 
-router.post('/v1/delivery-requests/:id/status', async (req, res) => {
+router.post('/v1/delivery-requests/:id/status', requireRider, async (req, res) => {
   const params = UpdateDeliveryStatusParams.safeParse(req.params);
   const body = UpdateDeliveryStatusBody.safeParse(req.body);
   if (!params.success || !validId(params.data.id) || !body.success) {
@@ -382,9 +410,13 @@ router.post('/v1/delivery-requests/:id/status', async (req, res) => {
     return;
   }
 
-  const current = await getDelivery(params.data.id);
+  const current = await getDelivery(params.data.id, req.actor.businessId);
   if (!current) {
     res.status(404).json(errorResponse('NOT_FOUND', 'Delivery request not found'));
+    return;
+  }
+  if (!(await isCurrentRider(params.data.id, req.actor))) {
+    res.status(403).json(errorResponse('FORBIDDEN', 'This delivery is not assigned to you'));
     return;
   }
   const validTransition =
@@ -396,16 +428,16 @@ router.post('/v1/delivery-requests/:id/status', async (req, res) => {
     return;
   }
 
-  const changed = await transition(params.data.id, body.data.status, body.data.version, body.data.clientEventId, 'Rider');
+  const changed = await transition(params.data.id, req.actor.businessId, body.data.status, body.data.version, body.data.clientEventId, req.actor.name);
   if (!changed) {
     res.status(409).json(errorResponse('VERSION_CONFLICT', 'This delivery changed. Refresh and try again.'));
     return;
   }
-  const delivery = await getDelivery(params.data.id);
+  const delivery = await getDelivery(params.data.id, req.actor.businessId);
   res.json(UpdateDeliveryStatusResponse.parse(delivery));
 });
 
-router.post('/v1/delivery-requests/:id/pod', async (req, res) => {
+router.post('/v1/delivery-requests/:id/pod', requireRider, async (req, res) => {
   const params = SubmitProofOfDeliveryParams.safeParse(req.params);
   const body = SubmitProofOfDeliveryBody.safeParse(req.body);
   if (!params.success || !validId(params.data.id) || !body.success) {
@@ -413,9 +445,13 @@ router.post('/v1/delivery-requests/:id/pod', async (req, res) => {
     return;
   }
 
-  const current = await getDelivery(params.data.id);
+  const current = await getDelivery(params.data.id, req.actor.businessId);
   if (!current) {
     res.status(404).json(errorResponse('NOT_FOUND', 'Delivery request not found'));
+    return;
+  }
+  if (!(await isCurrentRider(params.data.id, req.actor))) {
+    res.status(403).json(errorResponse('FORBIDDEN', 'This delivery is not assigned to you'));
     return;
   }
   if (current.status !== 'picked_up') {
@@ -430,7 +466,7 @@ router.post('/v1/delivery-requests/:id/pod', async (req, res) => {
         INSERT INTO proof_of_delivery (delivery_request_id, recipient_name, signature_data, photo_url)
         VALUES ($1, $2, $3, $4)
       `, [params.data.id, body.data.recipientName, body.data.signatureData, body.data.photoUrl]);
-      const changed = await transition(params.data.id, 'delivered', current.version, randomUUID(), 'Rider', txQuery);
+      const changed = await transition(params.data.id, req.actor.businessId, 'delivered', current.version, randomUUID(), req.actor.name, txQuery);
       if (!changed) {
         const error = new Error('VERSION_CONFLICT');
         error.code = 'VERSION_CONFLICT';
@@ -445,11 +481,11 @@ router.post('/v1/delivery-requests/:id/pod', async (req, res) => {
     throw error;
   }
 
-  const delivery = await getDelivery(params.data.id);
+  const delivery = await getDelivery(params.data.id, req.actor.businessId);
   res.json(SubmitProofOfDeliveryResponse.parse(delivery));
 });
 
-router.get('/v1/riders', async (_req, res) => {
+router.get('/v1/riders', requireDispatcher, async (req, res) => {
   const riders = await rows(query, `
     SELECT
       u.id,
@@ -464,7 +500,7 @@ router.get('/v1/riders', async (_req, res) => {
     WHERE u.business_id = $1 AND u.role = 'rider' AND u.is_active = true
     GROUP BY u.id, u.name, u.phone
     ORDER BY u.name
-  `, [BUSINESS_ID]);
+  `, [req.actor.businessId]);
 
   const output = riders.map((rider) => ({
     ...rider,
@@ -474,8 +510,7 @@ router.get('/v1/riders', async (_req, res) => {
   res.json(ListRidersResponse.parse(output));
 });
 
-router.get('/v1/riders/me/deliveries', async (req, res) => {
-  const riderId = req.header('x-reflex-rider-id') ?? DEFAULT_RIDER_ID;
+router.get('/v1/riders/me/deliveries', requireRider, async (req, res) => {
   const requestRows = await rows(query, `
     SELECT d.id
     FROM delivery_requests d
@@ -483,13 +518,13 @@ router.get('/v1/riders/me/deliveries', async (req, res) => {
       ON a.delivery_request_id = d.id AND a.is_current = true
     WHERE a.rider_id = $1 AND d.business_id = $2
     ORDER BY d.updated_at DESC
-  `, [riderId, BUSINESS_ID]);
+  `, [req.actor.id, req.actor.businessId]);
 
-  const deliveries = await Promise.all(requestRows.map((row) => getDelivery(row.id)));
+  const deliveries = await Promise.all(requestRows.map((row) => getDelivery(row.id, req.actor.businessId)));
   res.json(ListMyDeliveriesResponse.parse(deliveries.filter(Boolean)));
 });
 
-router.post('/v1/sync', async (req, res) => {
+router.post('/v1/sync', requireRider, async (req, res) => {
   const parsed = SyncOfflineEventsBody.safeParse(req.body);
   if (!parsed.success) {
     res.status(400).json(errorResponse('INVALID_BODY', parsed.error.message));
@@ -500,6 +535,7 @@ router.post('/v1/sync', async (req, res) => {
   let duplicate = 0;
   let rejected = 0;
   const deliveries = [];
+  const processedEventIds = [];
 
   for (const event of parsed.data.events) {
     const [existing] = await rows(query, `
@@ -507,11 +543,17 @@ router.post('/v1/sync', async (req, res) => {
     `, [event.clientEventId]);
     if (existing) {
       duplicate++;
+      processedEventIds.push(event.clientEventId);
       continue;
     }
 
-    const current = await getDelivery(event.deliveryId);
+    const current = await getDelivery(event.deliveryId, req.actor.businessId);
     if (!current || !isStatus(event.status)) {
+      rejected++;
+      continue;
+    }
+
+    if (!(await isCurrentRider(event.deliveryId, req.actor))) {
       rejected++;
       continue;
     }
@@ -525,18 +567,19 @@ router.post('/v1/sync', async (req, res) => {
       continue;
     }
 
-    const changed = await transition(event.deliveryId, event.status, event.version, event.clientEventId, 'Rider');
+    const changed = await transition(event.deliveryId, req.actor.businessId, event.status, event.version, event.clientEventId, req.actor.name);
     if (!changed) {
       rejected++;
       continue;
     }
 
     accepted++;
-    const updated = await getDelivery(event.deliveryId);
+    processedEventIds.push(event.clientEventId);
+    const updated = await getDelivery(event.deliveryId, req.actor.businessId);
     if (updated) deliveries.push(updated);
   }
 
-  res.json(SyncOfflineEventsResponse.parse({ accepted, duplicate, rejected, deliveries }));
+  res.json(SyncOfflineEventsResponse.parse({ accepted, duplicate, rejected, processedEventIds, deliveries }));
 });
 
 export default router;

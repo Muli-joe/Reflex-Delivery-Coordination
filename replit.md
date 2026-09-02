@@ -10,6 +10,9 @@ RiderLink helps Kenyan retailers create, assign, track, and verify deliveries fr
 - `pnpm --filter @workspace/api-spec run codegen` — regenerate API hooks and Zod schemas from the OpenAPI spec
 - `lib/db/schema.sql` — PostgreSQL schema reference for the database
 - Required env: `DATABASE_URL` — Postgres connection string
+- Before a team member can use the app, create a corresponding `users` row with
+  their Clerk user ID in `clerk_user_id`; roles are `owner`, `admin`,
+  `dispatcher`, or `rider`.
 
 ## Stack
 

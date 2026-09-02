@@ -1,0 +1,18 @@
+export default function Slide04Queue() {
+  return (
+    <div className="deck-grid relative w-screen h-screen overflow-hidden bg-bg text-text">
+      <div className="relative flex h-full flex-col px-[7vw] py-[6vh]">
+        <div className="flex items-center justify-between font-body text-[1vw] font-bold uppercase tracking-[.24em] text-primary"><span>03 / Dispatcher view</span><span className="text-muted">RiderLink</span></div>
+        <div className="mt-[5vh] grid flex-1 grid-cols-[.82fr_1.18fr] gap-[5vw]">
+          <div className="flex flex-col justify-center"><div className="mb-[2.4vh] font-body text-[1vw] font-bold uppercase tracking-[.24em] text-coral">Operational signal</div><h2 className="font-display text-[4.25vw] font-extrabold leading-[.98] tracking-[-.065em] text-balance">A queue built for confident decisions</h2><p className="mt-[3vh] max-w-[30vw] font-body text-[1.75vw] leading-[1.18] text-muted">Scan the work. Open the detail. Trust the state.</p><div className="mt-[5vh] flex gap-[.7vw]"><span className="h-[.8vw] w-[4.5vw] bg-primary" /><span className="h-[.8vw] w-[1.8vw] bg-accent" /><span className="h-[.8vw] w-[1vw] bg-sage" /></div></div>
+          <div className="paper-shadow self-center border border-primary/10 bg-[#fbf9f5] p-[1.5vw]">
+            <div className="flex items-center justify-between border-b border-primary/10 pb-[1.3vw]"><div className="font-display text-[1.5vw] font-bold">Delivery queue</div><div className="rounded-full bg-sage/50 px-[1vw] py-[.45vw] font-body text-[.9vw] font-bold text-primary">12 active</div></div>
+            <div className="flex gap-[1.4vw] border-b border-primary/10 py-[1vw] font-body text-[.95vw] font-bold text-muted"><span className="border-b-[.18vw] border-accent pb-[.8vw] text-primary">All</span><span>Pending 4</span><span>Assigned 5</span><span>Picked up 3</span></div>
+            <div className="mt-[1.1vw] space-y-[.75vw]"><div className="grid grid-cols-[.18fr_1fr_.55fr] items-center gap-[.8vw] border border-primary/10 bg-bg p-[1vw]"><span className="h-[.7vw] w-[.7vw] rounded-full bg-accent" /><div><div className="font-display text-[1.1vw] font-bold">RL-1048</div><div className="font-body text-[.95vw] text-muted">Westlands · 3 items</div></div><span className="justify-self-end rounded-full bg-[#fff0d0] px-[.7vw] py-[.35vw] font-body text-[.8vw] font-bold text-[#866419]">Pending</span></div><div className="grid grid-cols-[.18fr_1fr_.55fr] items-center gap-[.8vw] border border-primary/10 bg-bg p-[1vw]"><span className="h-[.7vw] w-[.7vw] rounded-full bg-primary" /><div><div className="font-display text-[1.1vw] font-bold">RL-1047</div><div className="font-body text-[.95vw] text-muted">Kilimani · 1 item</div></div><span className="justify-self-end rounded-full bg-sage/55 px-[.7vw] py-[.35vw] font-body text-[.8vw] font-bold text-primary">Assigned</span></div><div className="grid grid-cols-[.18fr_1fr_.55fr] items-center gap-[.8vw] border border-primary/10 bg-bg p-[1vw]"><span className="h-[.7vw] w-[.7vw] rounded-full bg-coral" /><div><div className="font-display text-[1.1vw] font-bold">RL-1046</div><div className="font-body text-[.95vw] text-muted">Lavington · 2 items</div></div><span className="justify-self-end rounded-full bg-[#f9dfd7] px-[.7vw] py-[.35vw] font-body text-[.8vw] font-bold text-[#984b38]">Picked up</span></div></div>
+          </div>
+        </div>
+        <div className="flex justify-between font-body text-[1vw] text-muted"><span>List rows and the detail drawer stay aligned</span><span>04 / 12</span></div>
+      </div>
+    </div>
+  );
+}

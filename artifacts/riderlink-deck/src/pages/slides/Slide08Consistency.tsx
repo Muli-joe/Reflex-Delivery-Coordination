@@ -1,0 +1,14 @@
+export default function Slide08Consistency() {
+  return (
+    <div className="relative w-screen h-screen overflow-hidden bg-[#ebe9e2] text-text">
+      <div className="relative flex h-full flex-col px-[7vw] py-[6vh]">
+        <div className="flex items-center justify-between font-body text-[1vw] font-bold uppercase tracking-[.24em] text-primary"><span>07 / Reliability</span><span className="text-muted">RiderLink</span></div>
+        <div className="mt-[8vh] grid flex-1 grid-cols-[.9fr_1.1fr] gap-[8vw]">
+          <div><div className="mb-[2.2vh] font-body text-[1vw] font-bold uppercase tracking-[.24em] text-coral">Trust is a workflow feature</div><h2 className="max-w-[35vw] font-display text-[4.5vw] font-extrabold leading-[.94] tracking-[-.07em]">Consistency is part of the product</h2><div className="mt-[5vh] flex items-center gap-[1vw]"><div className="h-[.2vw] w-[6vw] bg-accent" /><span className="font-body text-[1.25vw] text-muted">Every change should land everywhere</span></div></div>
+          <div className="self-center space-y-[1.2vw]"><div className="flex items-center gap-[1.3vw] border-b border-primary/20 pb-[1.5vw]"><span className="grid h-[3.5vw] w-[3.5vw] place-items-center rounded-full bg-primary font-display text-[1.35vw] font-bold text-accent">01</span><div className="flex-1"><div className="font-display text-[1.6vw] font-bold">Refresh related views</div><div className="mt-[.5vh] font-body text-[1.25vw] text-muted">After assignments and status changes</div></div><span className="font-display text-[1.8vw] font-bold text-primary">→</span></div><div className="flex items-center gap-[1.3vw] border-b border-primary/20 pb-[1.5vw]"><span className="grid h-[3.5vw] w-[3.5vw] place-items-center rounded-full bg-primary font-display text-[1.35vw] font-bold text-accent">02</span><div className="flex-1"><div className="font-display text-[1.6vw] font-bold">Protect detail views</div><div className="mt-[.5vh] font-body text-[1.25vw] text-muted">Against stale responses when switching deliveries</div></div><span className="font-display text-[1.8vw] font-bold text-primary">→</span></div><div className="flex items-center gap-[1.3vw] border-b border-primary/20 pb-[1.5vw]"><span className="grid h-[3.5vw] w-[3.5vw] place-items-center rounded-full bg-primary font-display text-[1.35vw] font-bold text-accent">03</span><div className="flex-1"><div className="font-display text-[1.6vw] font-bold">Guard critical writes</div><div className="mt-[.5vh] font-body text-[1.25vw] text-muted">Use version checks and transactions</div></div><span className="font-display text-[1.8vw] font-bold text-primary">✓</span></div></div>
+        </div>
+        <div className="flex justify-between font-body text-[1vw] text-muted"><span>Quiet reliability, visible in every handoff</span><span>08 / 12</span></div>
+      </div>
+    </div>
+  );
+}

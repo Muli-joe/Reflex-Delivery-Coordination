@@ -1,0 +1,98 @@
+[
+  {
+    "id": "9f0c7d4a-7d6d-4a2f-9a11-4c7b4a0a1001",
+    "position": 1,
+    "filepath": "src/pages/slides/Slide01RiderLink.tsx",
+    "title": "RiderLink",
+    "description": "Clear handoffs for Kenyan retail deliveries.",
+    "speakerNotes": ""
+  },
+  {
+    "id": "9f0c7d4a-7d6d-4a2f-9a11-4c7b4a0a1002",
+    "position": 2,
+    "filepath": "src/pages/slides/Slide02CalmerCoordination.tsx",
+    "title": "Delivery coordination should feel calmer",
+    "description": "The case for a shared operational picture.",
+    "speakerNotes": ""
+  },
+  {
+    "id": "9f0c7d4a-7d6d-4a2f-9a11-4c7b4a0a1003",
+    "position": 3,
+    "filepath": "src/pages/slides/Slide03OperationsDesk.tsx",
+    "title": "One operations desk for the full journey",
+    "description": "Create, coordinate, and complete deliveries in one system.",
+    "speakerNotes": ""
+  },
+  {
+    "id": "9f0c7d4a-7d6d-4a2f-9a11-4c7b4a0a1004",
+    "position": 4,
+    "filepath": "src/pages/slides/Slide04Queue.tsx",
+    "title": "A queue built for confident decisions",
+    "description": "A dispatcher view designed around current delivery state.",
+    "speakerNotes": ""
+  },
+  {
+    "id": "9f0c7d4a-7d6d-4a2f-9a11-4c7b4a0a1005",
+    "position": 5,
+    "filepath": "src/pages/slides/Slide05Journey.tsx",
+    "title": "From request to completed delivery",
+    "description": "A visible lifecycle with guarded transitions.",
+    "speakerNotes": ""
+  },
+  {
+    "id": "9f0c7d4a-7d6d-4a2f-9a11-4c7b4a0a1006",
+    "position": 6,
+    "filepath": "src/pages/slides/Slide06FieldMode.tsx",
+    "title": "Field mode for riders",
+    "description": "Clear next actions with offline-safe updates.",
+    "speakerNotes": ""
+  },
+  {
+    "id": "9f0c7d4a-7d6d-4a2f-9a11-4c7b4a0a1007",
+    "position": 7,
+    "filepath": "src/pages/slides/Slide07Proof.tsx",
+    "title": "Proof without unnecessary friction",
+    "description": "A simple final handoff without delivery-code checks.",
+    "speakerNotes": ""
+  },
+  {
+    "id": "9f0c7d4a-7d6d-4a2f-9a11-4c7b4a0a1008",
+    "position": 8,
+    "filepath": "src/pages/slides/Slide08Consistency.tsx",
+    "title": "Consistency is part of the product",
+    "description": "Reliability patterns that keep the interface honest.",
+    "speakerNotes": ""
+  },
+  {
+    "id": "9f0c7d4a-7d6d-4a2f-9a11-4c7b4a0a1009",
+    "position": 9,
+    "filepath": "src/pages/slides/Slide09Architecture.tsx",
+    "title": "Built for dependable operations",
+    "description": "The frontend, backend, data, and contract foundation.",
+    "speakerNotes": ""
+  },
+  {
+    "id": "9f0c7d4a-7d6d-4a2f-9a11-4c7b4a0a1010",
+    "position": 10,
+    "filepath": "src/pages/slides/Slide10Access.tsx",
+    "title": "Access that matches the operation",
+    "description": "Branded authentication with protected business routes.",
+    "speakerNotes": ""
+  },
+  {
+    "id": "9f0c7d4a-7d6d-4a2f-9a11-4c7b4a0a1011",
+    "position": 11,
+    "filepath": "src/pages/slides/Slide11Readiness.tsx",
+    "title": "Ready for the next delivery",
+    "description": "Current build and workflow readiness.",
+    "speakerNotes": ""
+  },
+  {
+    "id": "9f0c7d4a-7d6d-4a2f-9a11-4c7b4a0a1012",
+    "position": 12,
+    "filepath": "src/pages/slides/Slide12Closing.tsx",
+    "title": "RiderLink",
+    "description": "A calmer way to move every delivery forward.",
+    "speakerNotes": ""
+  }
+]
