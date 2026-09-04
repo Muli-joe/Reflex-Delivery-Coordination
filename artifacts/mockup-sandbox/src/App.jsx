@@ -14,6 +14,8 @@ function getPreviewPath() {
   return match ? match[1] : null;
 }
 
+const componentModules = import.meta.glob("./components/mockups/**/*.{jsx,tsx}");
+
 function PreviewRenderer({ componentPath }) {
   const [Component, setComponent] = useState(null);
   const [error, setError] = useState(null);
@@ -23,12 +25,22 @@ function PreviewRenderer({ componentPath }) {
     setComponent(null);
     setError(null);
 
-    import(`./components/mockups/${componentPath}.jsx`)
+    const modulePath = [
+      `./components/mockups/${componentPath}.jsx`,
+      `./components/mockups/${componentPath}.tsx`,
+    ].find((path) => componentModules[path]);
+
+    if (!modulePath) {
+      setError(`No preview component found for ${componentPath}.`);
+      return () => { cancelled = true; };
+    }
+
+    componentModules[modulePath]()
       .then((module) => {
         if (cancelled) return;
         const component = module.default || module.Preview ||
           Object.values(module).find((value) => typeof value === "function");
-        if (!component) setError(`No React component found in ${componentPath}.jsx`);
+        if (!component) setError(`No React component found in ${componentPath}.`);
         else setComponent(() => component);
       })
       .catch((loadError) => {
