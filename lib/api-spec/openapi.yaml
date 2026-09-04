@@ -30,6 +30,18 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/HealthStatus"
+  /v1/me:
+    get:
+      operationId: getCurrentUser
+      tags: [dashboard]
+      summary: Get the signed-in RiderLink user
+      responses:
+        "200":
+          description: Current RiderLink user
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/CurrentUser"
   /v1/dashboard/summary:
     get:
       operationId: getDashboardSummary
@@ -286,6 +298,14 @@ components:
           type: string
       required:
         - status
+    CurrentUser:
+      type: object
+      required: [id, businessId, name, role]
+      properties:
+        id: { type: string }
+        businessId: { type: string }
+        name: { type: string }
+        role: { type: string }
     DeliveryStatus:
       type: string
       enum: [pending, assigned, picked_up, delivered, cancelled]

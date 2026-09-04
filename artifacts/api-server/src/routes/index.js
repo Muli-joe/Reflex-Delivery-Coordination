@@ -82,6 +82,14 @@ async function requireAuth(req, res, next) {
 
 router.use(healthRouter);
 router.use(requireAuth);
+router.get('/v1/me', (req, res) => {
+  res.json({
+    id: req.actor.id,
+    businessId: req.actor.businessId,
+    name: req.actor.name,
+    role: req.actor.role,
+  });
+});
 router.use(reflexRouter);
 
 export default router;

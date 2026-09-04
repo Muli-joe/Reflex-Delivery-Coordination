@@ -1,8 +1,7 @@
 import { useState } from 'react';
 import { Bell, ClipboardList, LayoutDashboard, Menu, Settings, Bike, X } from 'lucide-react';
 import { Link, useLocation } from 'wouter';
-import { useHealthCheck } from '@workspace/api-client-react';
-import { useUser } from '@clerk/react';
+import { useGetCurrentUser, useHealthCheck } from '@workspace/api-client-react';
 
 const navItems = [
   { href: '/', label: 'Overview', icon: LayoutDashboard },
@@ -16,9 +15,9 @@ export function Shell({ children }) {
   const [location] = useLocation();
   const [open, setOpen] = useState(false);
   const health = useHealthCheck();
-  const { user } = useUser();
-  const userName = getUserDisplayName(user);
-  const userFirstName = user?.firstName || userName;
+  const currentUser = useGetCurrentUser();
+  const userName = currentUser.data?.name || 'Loading profile';
+  const userFirstName = userName.split(/\s+/)[0] || userName;
   const active = (href) => href === '/' ? location === '/' : location.startsWith(href);
 
   return (
@@ -59,14 +58,6 @@ export function Shell({ children }) {
       </main>
     </div>
   );
-}
-
-export function getUserDisplayName(user) {
-  return user?.fullName
-    || [user?.firstName, user?.lastName].filter(Boolean).join(' ')
-    || user?.username
-    || user?.primaryEmailAddress?.emailAddress?.split('@')[0]
-    || 'Dispatcher';
 }
 
 export function StatusBadge({ status }) {

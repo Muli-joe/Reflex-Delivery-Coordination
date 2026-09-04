@@ -1,15 +1,15 @@
 import { useEffect, useState } from 'react';
 import { Check, ChevronRight, ShieldCheck, Smartphone, Store, Users } from 'lucide-react';
-import { useUser } from '@clerk/react';
-import { getUserDisplayName, initials } from '@/components/shell';
+import { useGetCurrentUser } from '@workspace/api-client-react';
+import { initials } from '@/components/shell';
 
 export default function Settings() {
   const [saved, setSaved] = useState(false);
   const [alerts, setAlerts] = useState(true);
   const [sound, setSound] = useState(true);
   const [business, setBusiness] = useState('Mwangaza Mini Mart');
-  const { user } = useUser();
-  const userName = getUserDisplayName(user);
+  const currentUser = useGetCurrentUser();
+  const userName = currentUser.data?.name || 'Loading profile';
 
   useEffect(() => {
     const raw = localStorage.getItem('reflex-settings');
