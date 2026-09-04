@@ -2,6 +2,7 @@ import { useState } from 'react';
 import { Bell, ClipboardList, LayoutDashboard, Menu, Settings, Bike, X } from 'lucide-react';
 import { Link, useLocation } from 'wouter';
 import { useHealthCheck } from '@workspace/api-client-react';
+import { useUser } from '@clerk/react';
 
 const navItems = [
   { href: '/', label: 'Overview', icon: LayoutDashboard },
@@ -15,6 +16,9 @@ export function Shell({ children }) {
   const [location] = useLocation();
   const [open, setOpen] = useState(false);
   const health = useHealthCheck();
+  const { user } = useUser();
+  const userName = getUserDisplayName(user);
+  const userFirstName = user?.firstName || userName;
   const active = (href) => href === '/' ? location === '/' : location.startsWith(href);
 
   return (
@@ -34,8 +38,8 @@ export function Shell({ children }) {
         </nav>
         <div className="sidebar-foot">
           <div className="operator-row">
-            <div className="operator-avatar">AM</div>
-            <div className="operator-meta"><strong>Amara Mwangi</strong><span>Dispatcher · Nairobi</span></div>
+            <div className="operator-avatar">{initials(userName)}</div>
+            <div className="operator-meta"><strong>{userName}</strong><span>Dispatcher · Nairobi</span></div>
           </div>
         </div>
       </aside>
@@ -43,7 +47,7 @@ export function Shell({ children }) {
         <header className="topbar">
           <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
             <button className="mobile-menu" aria-label="Open navigation" data-testid="button-open-navigation" onClick={() => setOpen(true)}><Menu size={21} /></button>
-            <div><div className="topbar-kicker">Thursday · 06 June 2024</div><div className="topbar-title">Good morning, Amara</div></div>
+            <div><div className="topbar-kicker">Thursday · 06 June 2024</div><div className="topbar-title">Good morning, {userFirstName}</div></div>
           </div>
           <div className="topbar-actions">
             <div className="connection-pill" data-testid="status-connection"><span className={`online-dot ${health.isError ? 'offline-dot' : ''}`} /> {health.isLoading ? 'Checking desk' : health.isError ? 'Limited connection' : 'Connected'}</div>
@@ -55,6 +59,14 @@ export function Shell({ children }) {
       </main>
     </div>
   );
+}
+
+export function getUserDisplayName(user) {
+  return user?.fullName
+    || [user?.firstName, user?.lastName].filter(Boolean).join(' ')
+    || user?.username
+    || user?.primaryEmailAddress?.emailAddress?.split('@')[0]
+    || 'Dispatcher';
 }
 
 export function StatusBadge({ status }) {
