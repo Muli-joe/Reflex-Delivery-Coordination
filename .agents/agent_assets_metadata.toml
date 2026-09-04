@@ -1,0 +1,8 @@
+uploads = []
+generated = []
+
+[[outputs]]
+id = "RmFpatc5shvEnGl6zPdB9"
+uri = "file://.local/outputs/RiderLink-Project-Overview.pptx"
+type = "slides"
+title = "RiderLink Project Overview.pptx"

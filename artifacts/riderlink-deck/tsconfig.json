@@ -5,6 +5,7 @@
     "noEmit": true,
     "lib": ["es2022", "dom", "dom.iterable"],
     "jsx": "preserve",
+    "module": "ESNext",
     "resolveJsonModule": true,
     "allowImportingTsExtensions": true,
     "moduleResolution": "bundler",
